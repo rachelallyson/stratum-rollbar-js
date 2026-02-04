@@ -257,12 +257,9 @@ describe("RollbarService integration", () => {
       );
     });
 
-    it("should publish events with no plugin data", async () => {
+    it("should not publish to Rollbar when no RollbarPlugin pluginData (opt-in)", async () => {
       await service.publish("SIMPLE_EVENT", {});
-      expect(mockRollbar.info).toHaveBeenCalledWith(
-        "SIMPLE_EVENT",
-        expect.objectContaining({ originalEvent: "SIMPLE_EVENT" }),
-      );
+      expect(mockRollbar.info).not.toHaveBeenCalled();
     });
   });
 

@@ -161,18 +161,14 @@ describe("RollbarPublisher", () => {
   });
 
   describe("getEventOutput", () => {
-    it("should extract RollbarPlugin data from snapshot pluginData", () => {
+    it("should return payload when snapshot has eventOptions.data (Stratum opt-in)", () => {
       const publisher = new RollbarPublisher({
         rollbarInstance: mockRollbar,
       } as RollbarPluginOptions);
       const snapshot = {
         event: { id: "TEST_EVENT" },
         eventOptions: {
-          pluginData: {
-            RollbarPlugin: {
-              properties: { key: "value" },
-            },
-          },
+          data: { properties: { key: "value" } },
         },
       };
       const event = { item: { eventType: "info" } };
@@ -184,7 +180,7 @@ describe("RollbarPublisher", () => {
       });
     });
 
-    it("should fall back to eventOptions.data.properties when pluginData missing", () => {
+    it("should use eventOptions.data.properties when data present", () => {
       const publisher = new RollbarPublisher({
         rollbarInstance: mockRollbar,
       } as RollbarPluginOptions);
@@ -203,7 +199,7 @@ describe("RollbarPublisher", () => {
       });
     });
 
-    it("should return empty properties when no pluginData or data", () => {
+    it("should return null when eventOptions.data is missing (no Rollbar opt-in)", () => {
       const publisher = new RollbarPublisher({
         rollbarInstance: mockRollbar,
       } as RollbarPluginOptions);
@@ -213,14 +209,10 @@ describe("RollbarPublisher", () => {
       };
       const event = { item: { eventType: "debug" } };
       const output = publisher.getEventOutput(event as any, snapshot as any);
-      expect(output).toEqual({
-        eventName: "MINIMAL",
-        properties: {},
-        eventType: "debug",
-      });
+      expect(output).toBeNull();
     });
 
-    it("should return empty properties when eventOptions is undefined", () => {
+    it("should return null when eventOptions is undefined", () => {
       const publisher = new RollbarPublisher({
         rollbarInstance: mockRollbar,
       } as RollbarPluginOptions);
@@ -229,11 +221,7 @@ describe("RollbarPublisher", () => {
       };
       const event = { item: { eventType: "info" } };
       const output = publisher.getEventOutput(event as any, snapshot as any);
-      expect(output).toEqual({
-        eventName: "NO_OPTIONS",
-        properties: {},
-        eventType: "info",
-      });
+      expect(output).toBeNull();
     });
   });
 

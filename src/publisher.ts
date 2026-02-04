@@ -97,11 +97,16 @@ export class RollbarPublisher extends BasePublisher {
   }
 
   getEventOutput(event: BaseEventModel, snapshot: StratumSnapshot): unknown {
-    // Stratum puts plugin-specific payload in eventOptions.data for this publisher (pluginData is removed)
+    // Stratum copies pluginData[pluginName] into eventOptions.data for this publisher and
+    // removes pluginData. Only send when the caller included RollbarPlugin in pluginData,
+    // i.e. when eventOptions.data is present (otherwise we'd send every event to Rollbar).
     const data = snapshot.eventOptions?.data;
-    const pluginData = snapshot.eventOptions?.pluginData?.RollbarPlugin;
+    if (data == null) {
+      return null;
+    }
+
     const eventType = event.item.eventType;
-    const properties = data?.properties ?? pluginData?.properties ?? {};
+    const properties = data?.properties ?? {};
 
     return {
       eventName: snapshot.event.id,
