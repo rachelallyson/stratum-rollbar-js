@@ -1,0 +1,64 @@
+---
+title: Errors with stack traces
+description: Send Error instances so Rollbar gets stack traces.
+---
+
+# Errors with stack traces
+
+To send stack traces to Rollbar, pass an **Error** instance in `properties.error`. The plugin forwards it to Rollbar's `error()` / `critical()` methods so the stack is captured.
+
+## Example
+
+```tsx
+try {
+  await doSomething();
+} catch (err) {
+  await rollbarService.publish("API_ERROR", {
+    pluginData: {
+      RollbarPlugin: {
+        properties: {
+          error: err instanceof Error ? err : new Error(String(err)),
+          path: "/api/orders",
+          status: 500,
+        },
+      },
+    },
+  });
+  throw err;
+}
+```
+
+## Catalog schema
+
+Your catalog should declare `error` as `"object"` (the plugin accepts `Error` instances):
+
+```tsx
+API_ERROR: {
+  id: "API_ERROR",
+  description: "API request failed",
+  eventType: RollbarEventTypes.ERROR,
+  properties: {
+    error: "object",
+    path: "string",
+    status: "number",
+  },
+},
+```
+
+## Message-only (no stack)
+
+If you don't pass an `Error`, Rollbar still receives the message and custom data; there just won't be a stack trace:
+
+```tsx
+await rollbarService.publish("API_ERROR", {
+  pluginData: {
+    RollbarPlugin: {
+      properties: {
+        message: "Payment failed",
+        path: "/api/checkout",
+        status: 402,
+      },
+    },
+  },
+});
+```

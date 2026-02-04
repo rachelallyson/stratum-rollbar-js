@@ -1,0 +1,71 @@
+{
+  "name": "@rachelallyson/stratum-rollbar-js",
+  "version": "1.0.0",
+  "description": "Rollbar plugin for Stratum Observability",
+  "homepage": "https://rachelallyson.github.io/stratum-rollbar-js/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rachelallyson/stratum-rollbar-js.git"
+  },
+  "scripts": {
+    "example": "node scripts/generate-example-env.cjs && node_modules/.bin/parcel src/example/index.html",
+    "example:e2e": "node scripts/generate-example-env.cjs && node_modules/.bin/parcel src/example/index.html --port 3967",
+    "build": "npm run build:clean && npm run build:lib",
+    "build:clean": "rm -rf dist",
+    "prepublishOnly": "npm run build",
+    "build:lib": "rollup -c --bundleConfigAsCjs",
+    "update": "npm version patch; git push --tags origin",
+    "test": "jest --passWithNoTests",
+    "test:e2e": "playwright test",
+    "docs:dev": "cd docs && npm run dev",
+    "docs:build": "cd docs && npm run build"
+  },
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "default": "./dist/cjs/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      ".": [
+        "./dist/types/index.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "rollbar",
+    "stratum",
+    "observability",
+    "error-reporting"
+  ],
+  "author": "Rachel Allyson",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@capitalone/stratum-observability": ">=1.2.0 <2.0.0",
+    "rollbar": "^2.26.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@types/jest": "^30.0.0",
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
+    "dotenv": "^16.6.1",
+    "jest": "^30.0.5",
+    "parcel": "^2.15.4",
+    "process": "^0.11.10",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "rollup": "^4.46.2",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "ts-jest": "^29.4.1",
+    "typescript": "^5.9.2"
+  }
+}

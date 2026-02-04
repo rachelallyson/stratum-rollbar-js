@@ -1,0 +1,54 @@
+---
+title: Event types
+description: Log levels, identify, and clear person.
+---
+
+# Event types
+
+Catalog items use `eventType` from `RollbarEventTypes`. Each type maps to Rollbar behavior as follows.
+
+## Log levels
+
+| Event type | Rollbar behavior |
+|------------|-------------------|
+| `RollbarEventTypes.CRITICAL` | `rollbar.critical(message, err?, extra?)` |
+| `RollbarEventTypes.ERROR` | `rollbar.error(message, err?, extra?)` |
+| `RollbarEventTypes.WARNING` | `rollbar.warning(message, extra)` |
+| `RollbarEventTypes.INFO` | `rollbar.info(message, extra)` |
+| `RollbarEventTypes.DEBUG` | `rollbar.debug(message, extra)` |
+
+The catalog item `id` is used as the Rollbar message (title). All `pluginData.RollbarPlugin.properties` are sent as `extra` (custom data) in Rollbar.
+
+## Person (identify / clear)
+
+| Event type | Rollbar behavior |
+|------------|-------------------|
+| `RollbarEventTypes.IDENTIFY` | `rollbar.configure({ payload: { person: { id, username?, email? } } })` |
+| `RollbarEventTypes.CLEAR_PERSON` | `rollbar.configure({ payload: { person: { id: null } } })` |
+
+For **IDENTIFY**, pass in `pluginData.RollbarPlugin.properties`:
+
+- **id** (required) — person identifier. If missing, the plugin falls back to `distinct_id` or `user_id`.
+- **username** (optional)
+- **email** (optional)
+
+Example:
+
+```tsx
+await rollbarService.publish("USER_SIGNED_IN", {
+  pluginData: {
+    RollbarPlugin: {
+      properties: {
+        id: user.id,
+        username: user.name,
+        email: user.email,
+      },
+    },
+  },
+});
+
+// On logout
+await rollbarService.publish("USER_SIGNED_OUT", {
+  pluginData: { RollbarPlugin: { properties: {} } },
+});
+```

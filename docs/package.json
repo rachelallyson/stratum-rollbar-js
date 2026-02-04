@@ -1,0 +1,28 @@
+{
+  "name": "stratum-rollbar-js-docs",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "dev:with-search": "npm run index:search && next dev",
+    "index:search": "if [ -d out ]; then npx pagefind --site out --output-path public/_pagefind; else echo 'Run npm run build first, then npm run index:search (or dev:with-search) for search in dev.'; exit 1; fi",
+    "build": "next build",
+    "postbuild": "if [ -d out ]; then npx pagefind --site out --output-path out/_pagefind; else echo 'Skipping search index (no out/).'; fi",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "^15.0.0",
+    "nextra": "^4.6.1",
+    "nextra-theme-docs": "^4.6.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "pagefind": "^1.4.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.9.0"
+  }
+}

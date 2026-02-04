@@ -1,0 +1,21 @@
+---
+title: Configuration options
+description: Full table of RollbarPluginFactory options.
+---
+
+# Configuration options
+
+Options passed to `RollbarPluginFactory({ ... })`:
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `ACCESS_TOKEN` | `string` | Single token used when `SERVER_ACCESS_TOKEN` / `CLIENT_ACCESS_TOKEN` are not set |
+| `SERVER_ACCESS_TOKEN` | `string` | Token for Node (Next.js server, API routes). Use Rollbar "post_server_item" |
+| `CLIENT_ACCESS_TOKEN` | `string` | Token for browser. Use Rollbar "post_client_item" |
+| `config` | `RollbarConfig` | Base Rollbar config (environment, captureUncaught, reportLevel, etc.) |
+| `serverConfig` | `RollbarConfig` | Merged over `config` when running on server |
+| `clientConfig` | `RollbarConfig` | Merged over `config` when running in browser |
+| `rollbarInstance` | `Rollbar` | Pre-initialized Rollbar instance; skips token/config init |
+| `DEBUG` | `boolean` | When true, log publish calls to console |
+
+At least one of `ACCESS_TOKEN`, `SERVER_ACCESS_TOKEN`, `CLIENT_ACCESS_TOKEN`, or `rollbarInstance` must be provided. The plugin picks the token for the current runtime (server vs browser) and initializes the Rollbar SDK once.

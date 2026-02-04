@@ -1,0 +1,50 @@
+---
+title: Configuration
+description: Plugin options and Rollbar config.
+---
+
+# Configuration
+
+## Plugin options
+
+| Option | Description |
+|--------|-------------|
+| `ACCESS_TOKEN` | Fallback token when `SERVER_ACCESS_TOKEN` / `CLIENT_ACCESS_TOKEN` are not set |
+| `SERVER_ACCESS_TOKEN` | Token for Node (Next.js server, API routes). Use Rollbar "post_server_item" |
+| `CLIENT_ACCESS_TOKEN` | Token for browser. Use Rollbar "post_client_item" |
+| `config` | Rollbar config for both runtimes (e.g. `environment`, `captureUncaught`) |
+| `serverConfig` | Merged only when running on server |
+| `clientConfig` | Merged only when running in the browser |
+| `rollbarInstance` | Pre-initialized Rollbar instance (skips token/config init) |
+| `DEBUG` | Log publish calls to console |
+
+If you only need one runtime, pass just `ACCESS_TOKEN` (or only `SERVER_ACCESS_TOKEN` or `CLIENT_ACCESS_TOKEN`). The plugin initializes only when the current runtime has a token.
+
+## Rollbar config
+
+Options in `config`, `serverConfig`, and `clientConfig` are passed to the Rollbar SDK. Common keys:
+
+- **environment** — e.g. `"production"`, `"development"`.
+- **captureUncaught** — capture uncaught exceptions (client).
+- **captureUnhandledRejections** — capture unhandled promise rejections (client).
+- **reportLevel** — minimum level to send (`"debug"`, `"info"`, `"warning"`, `"error"`, `"critical"`). Default can filter out `info`/`debug`; set to `"debug"` if you want all levels.
+- **payload** — `context`, `client`, `server`, etc.
+
+See [Rollbar's configuration reference](https://docs.rollbar.com/docs/rollbarjs-configuration-reference).
+
+## Example with reportLevel
+
+To ensure info/debug events (e.g. button clicks) are sent:
+
+```tsx
+RollbarPluginFactory({
+  CLIENT_ACCESS_TOKEN: process.env.NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN!,
+  config: {
+    environment: process.env.NODE_ENV,
+    reportLevel: "debug",
+  },
+  clientConfig: {
+    reportLevel: "debug",
+  },
+});
+```

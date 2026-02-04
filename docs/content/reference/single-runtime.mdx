@@ -1,0 +1,67 @@
+---
+title: Single runtime
+description: Using one token or a pre-initialized Rollbar instance when your app runs only in the browser or only in Node.
+---
+
+# Single runtime
+
+Use a **single token** or a **pre-initialized Rollbar instance** when your app runs only in the browser (e.g. a SPA or static site) or only in Node (e.g. an API or script). For Next.js or other apps that run in both runtimes, see [Next.js](/guides/nextjs) and use `CLIENT_ACCESS_TOKEN` and `SERVER_ACCESS_TOKEN` instead.
+
+## One token
+
+Pass `ACCESS_TOKEN`; the plugin uses it for the current runtime and skips separate server/client config.
+
+```tsx
+import { RollbarService, RollbarPluginFactory } from "@rachelallyson/stratum-rollbar-js";
+
+const catalog = { /* ... */ };
+
+export const rollbarService = new RollbarService({
+  catalog: { items: catalog },
+  plugins: [
+    RollbarPluginFactory({
+      ACCESS_TOKEN: process.env.ROLLBAR_ACCESS_TOKEN!,
+      config: {
+        environment: process.env.NODE_ENV ?? "production",
+        captureUncaught: true,
+        captureUnhandledRejections: true,
+      },
+    }),
+  ],
+  productName: "my-app",
+  productVersion: "1.0.0",
+});
+```
+
+- **Browser:** Use Rollbar's **post client item** token. Expose it via `NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN` or your bundler's env (e.g. `import.meta.env`) if needed.
+- **Node:** Use Rollbar's **post server item** token; keep it server-only (no `NEXT_PUBLIC_`).
+
+## Pre-initialized Rollbar instance
+
+Pass an existing Rollbar instance instead of tokens. The plugin will **not** initialize Rollbar; it uses your instance and only handles Stratum's `publish()` → Rollbar API mapping.
+
+```tsx
+import Rollbar from "rollbar";
+import { RollbarService, RollbarPluginFactory } from "@rachelallyson/stratum-rollbar-js";
+
+const rollbar = new Rollbar({
+  accessToken: process.env.ROLLBAR_ACCESS_TOKEN!,
+  captureUncaught: true,
+  environment: process.env.NODE_ENV,
+});
+
+const rollbarService = new RollbarService({
+  catalog: { items: catalog },
+  plugins: [RollbarPluginFactory({ rollbarInstance: rollbar })],
+  productName: "my-app",
+  productVersion: "1.0.0",
+});
+```
+
+Use this when you need custom Rollbar setup (e.g. [transforms](https://docs.rollbar.com/docs/rollbarjs-transforms), [checkIgnore](https://docs.rollbar.com/docs/rollbarjs-configuration-reference#checkignore), or a custom endpoint) and still want Stratum's catalog and `publish()` API. When `rollbarInstance` is provided, token and `config` / `serverConfig` / `clientConfig` options are ignored.
+
+## See also
+
+- [Configuration options](/reference/options) — All plugin options.
+- [Quick start](/guides/quickstart) — Catalog and first publish.
+- [Next.js](/guides/nextjs) — Dual-token setup for server + client.

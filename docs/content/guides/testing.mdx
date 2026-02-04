@@ -1,0 +1,38 @@
+---
+title: Testing
+description: Unit tests and E2E tests, including verifying Rollbar receives data.
+---
+
+# Testing
+
+## Unit tests (Jest)
+
+The package ships with Jest tests for the plugin, publisher, service, and models:
+
+```bash
+npm test
+```
+
+These cover configuration validation, token selection per runtime, event output shape, publish behavior for all event types (including identify/clear_person and errors with stack), and catalog/model validation.
+
+## E2E tests (Playwright)
+
+E2E tests run the example app in a browser and assert UI and network behavior:
+
+```bash
+npm run test:e2e
+```
+
+They start the example server on port 3967, then:
+
+- Load the app and assert heading and status.
+- Wait for "Last action" to show LOADED sent/failed and Rollbar Available/Not available.
+- Click each event button and assert "Last action" updates to the expected "… sent" message.
+- Run the full login → logout flow and assert status and user info.
+- **Verify Rollbar receives data**: one test clicks "Track event", waits for a POST to `api.rollbar.com/api/1/item`, asserts the request body contains the correct event name and custom data (e.g. `BUTTON_CLICK`, `button_name`), and asserts the **response** is 200 with `err: 0` and a `result.uuid` (so Rollbar accepted and stored the item).
+
+So you can confirm both that the client sends the payload and that Rollbar's server accepts it. The Rollbar API test requires a valid `ROLLBAR_CLIENT_TOKEN` in `.env`; without it, the test fails at "Rollbar: Available".
+
+## Running E2E in CI
+
+In CI, set `ROLLBAR_CLIENT_TOKEN` (or `NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN`) as a secret if you want the full Rollbar API assertion to run. Otherwise, the other E2E tests still run and validate the app flow; only the "sends event payload to Rollbar API and server accepts it" test will fail when Rollbar is not available.

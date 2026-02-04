@@ -1,0 +1,127 @@
+---
+title: Next.js
+description: Use the Rollbar plugin in Next.js (server and client).
+---
+
+# Next.js
+
+Use separate tokens so server and client events are sent correctly. Follow [Rollbar's Next.js docs](https://docs.rollbar.com/docs/nextjs): **do not** put the server token in a `NEXT_PUBLIC_` env var.
+
+## Environment variables
+
+In `.env` or `.env.local`:
+
+```bash
+NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN=<POST CLIENT ITEM TOKEN>
+ROLLBAR_SERVER_TOKEN=<POST SERVER ITEM TOKEN>
+```
+
+## Service setup
+
+Create a shared module (e.g. `lib/observability.ts`):
+
+```tsx
+import {
+  RollbarService,
+  RollbarPluginFactory,
+  RollbarEventTypes,
+} from "@rachelallyson/stratum-rollbar-js";
+
+const catalog = {
+  API_ERROR: {
+    id: "API_ERROR",
+    description: "API request failed",
+    eventType: RollbarEventTypes.ERROR,
+    properties: { error: "object", path: "string", status: "number" },
+  },
+  USER_SIGNED_IN: {
+    id: "USER_SIGNED_IN",
+    description: "User identified for Rollbar",
+    eventType: RollbarEventTypes.IDENTIFY,
+    properties: { id: "string", username: "string", email: "string" },
+  },
+  USER_SIGNED_OUT: {
+    id: "USER_SIGNED_OUT",
+    description: "Clear Rollbar person",
+    eventType: RollbarEventTypes.CLEAR_PERSON,
+    properties: {},
+  },
+};
+
+export const rollbarService = new RollbarService({
+  catalog: { items: catalog },
+  plugins: [
+    RollbarPluginFactory({
+      SERVER_ACCESS_TOKEN: process.env.ROLLBAR_SERVER_TOKEN!,
+      CLIENT_ACCESS_TOKEN: process.env.NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN!,
+      config: {
+        environment: process.env.NODE_ENV,
+        payload: { context: "my-app" },
+      },
+      serverConfig: {
+        captureUncaught: false,
+        captureUnhandledRejections: false,
+      },
+      clientConfig: {
+        captureUncaught: true,
+        captureUnhandledRejections: true,
+      },
+    }),
+  ],
+  productName: "my-app",
+  productVersion: "1.0.0",
+});
+```
+
+## Server (API routes, server components)
+
+```tsx
+// app/api/some-route/route.ts
+import { rollbarService } from "@/lib/observability";
+
+export async function GET() {
+  try {
+    // ...
+  } catch (e) {
+    await rollbarService.publish("API_ERROR", {
+      pluginData: {
+        RollbarPlugin: {
+          properties: {
+            error: e instanceof Error ? e : new Error(String(e)),
+            path: "/api/some-route",
+            status: 500,
+          },
+        },
+      },
+    });
+    throw e;
+  }
+}
+```
+
+## Client (client components)
+
+```tsx
+"use client";
+import { rollbarService } from "@/lib/observability";
+
+export function SomeClientComponent() {
+  const handleError = async () => {
+    await rollbarService.publish("API_ERROR", {
+      pluginData: {
+        RollbarPlugin: {
+          properties: {
+            error: new Error("Client-side failure"),
+            path: window.location.pathname,
+          },
+        },
+      },
+    });
+  };
+  // ...
+}
+```
+
+## Rollbar provider and uncaught errors
+
+For uncaught errors and the Rollbar React Provider / Error Boundary, follow [Rollbar's Next.js guide](https://docs.rollbar.com/docs/nextjs). This plugin handles **Stratum-driven** events (`rollbarService.publish(...)`) on both server and client and works alongside that setup.

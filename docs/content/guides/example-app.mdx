@@ -1,0 +1,54 @@
+---
+title: Example app
+description: Run the demo and try the UI.
+---
+
+# Example app
+
+A runnable demo lives in `src/example/` in the package repo. It uses the same pattern: catalog, Stratum service with Rollbar plugin, and a small React UI to identify/clear person and send events at different log levels.
+
+## Run locally
+
+1. **Clone and install**
+
+   ```bash
+   git clone https://github.com/rachelallyson/stratum-rollbar-js.git
+   cd stratum-rollbar-js
+   npm install
+   ```
+
+2. **Add your token**
+
+   Create a `.env` file in the package root (same folder as `package.json`). Use your Rollbar **post client item** token:
+
+   ```bash
+   ROLLBAR_CLIENT_TOKEN=your-post-client-item-token
+   ```
+
+   Use no quotes so the value is inlined correctly. See `.env.example` for reference.
+
+3. **Start the example**
+
+   ```bash
+   npm run example
+   ```
+
+   This generates env into the build and starts Parcel. Open the URL Parcel prints (e.g. `http://localhost:1234`).
+
+## What you can do
+
+- **Status** — See whether Rollbar is "Available" and the "Last action" (e.g. LOADED sent).
+- **Login / Logout** — Sends IDENTIFY and CLEAR_PERSON so Rollbar associates or clears the person.
+- **Event buttons** — Send info (button click), warning, error (message), error with stack, and debug. Each updates "Last action" to show that the event was sent.
+
+If you don't set a valid token, a yellow banner explains that events won't appear in your Rollbar project until you set `ROLLBAR_CLIENT_TOKEN`.
+
+## E2E tests
+
+Playwright E2E tests exercise the example app: load, status, all event buttons, login/logout, and one test that verifies the browser sends the correct payload to Rollbar's API and that Rollbar responds with 200 and a UUID (server accepted the data).
+
+```bash
+npm run test:e2e
+```
+
+The tests start the example server on port 3967 and run in Chromium. They require a valid token in `.env` for the "sends event payload to Rollbar API and server accepts it" test.

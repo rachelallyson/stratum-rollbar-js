@@ -1,0 +1,99 @@
+---
+title: Quick start
+description: Wire the Rollbar plugin and publish your first event.
+---
+
+# Quick start
+
+## 1. Define a catalog
+
+Create a catalog of events your app can publish. Each item has an `id`, `eventType` (from `RollbarEventTypes`), and `properties` (schema for the payload).
+
+```tsx
+import { RollbarEventTypes } from "@rachelallyson/stratum-rollbar-js";
+
+const catalog = {
+  BUTTON_CLICK: {
+    id: "BUTTON_CLICK",
+    description: "User clicked a button",
+    eventType: RollbarEventTypes.INFO,
+    properties: {
+      button_name: "string",
+      page: "string",
+    },
+  },
+  API_ERROR: {
+    id: "API_ERROR",
+    description: "API request failed",
+    eventType: RollbarEventTypes.ERROR,
+    properties: {
+      error: "object",
+      path: "string",
+      status: "number",
+    },
+  },
+};
+```
+
+## 2. Create the service
+
+Create a `RollbarService` with your catalog and the plugin. Use `CLIENT_ACCESS_TOKEN` and `SERVER_ACCESS_TOKEN` for Next.js; for a single runtime, `ACCESS_TOKEN` is enough.
+
+```tsx
+import {
+  RollbarService,
+  RollbarPluginFactory,
+} from "@rachelallyson/stratum-rollbar-js";
+
+export const rollbarService = new RollbarService({
+  catalog: { items: catalog },
+  plugins: [
+    RollbarPluginFactory({
+      CLIENT_ACCESS_TOKEN: process.env.NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN!,
+      SERVER_ACCESS_TOKEN: process.env.ROLLBAR_SERVER_TOKEN!,
+      config: {
+        environment: process.env.NODE_ENV,
+        captureUncaught: true,
+        captureUnhandledRejections: true,
+      },
+    }),
+  ],
+  productName: "my-app",
+  productVersion: "1.0.0",
+});
+```
+
+## 3. Publish events
+
+Call `publish` with a catalog key and event-specific data. Plugin data goes under `pluginData.RollbarPlugin.properties`.
+
+```tsx
+// Info event
+await rollbarService.publish("BUTTON_CLICK", {
+  pluginData: {
+    RollbarPlugin: {
+      properties: {
+        button_name: "submit",
+        page: "checkout",
+      },
+    },
+  },
+});
+
+// Error with Error object (for stack traces)
+await rollbarService.publish("API_ERROR", {
+  pluginData: {
+    RollbarPlugin: {
+      properties: {
+        error: err instanceof Error ? err : new Error(String(err)),
+        path: "/api/orders",
+        status: 500,
+      },
+    },
+  },
+});
+```
+
+`publish` returns a `Promise<boolean>`: `true` if at least one publisher (here, Rollbar) accepted the event.
+
+Next: [Next.js setup](/guides/nextjs) or [Configuration](/guides/configuration).

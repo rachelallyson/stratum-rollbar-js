@@ -1,0 +1,24 @@
+{
+  "index": "Introduction",
+  "installation": "Installation",
+  "guides": {
+    "title": "Guides",
+    "pages": [
+      "quickstart",
+      "nextjs",
+      "configuration",
+      "event-types",
+      "errors-with-stack",
+      "example-app",
+      "testing",
+      "troubleshooting"
+    ]
+  },
+  "reference": {
+    "title": "Reference",
+    "pages": [
+      "options",
+      "single-runtime"
+    ]
+  }
+}

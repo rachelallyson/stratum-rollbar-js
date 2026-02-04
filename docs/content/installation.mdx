@@ -1,0 +1,40 @@
+---
+title: Installation
+description: Install the Stratum Rollbar plugin and add your Rollbar tokens.
+---
+
+# Installation
+
+The plugin works in any JavaScript environment (Node, browser, Next.js, Vite, Express, etc.). Next.js and React are not required.
+
+## 1. Install the package
+
+```bash
+npm install @rachelallyson/stratum-rollbar-js
+```
+
+The plugin depends on [Stratum Observability](https://www.npmjs.com/package/@capitalone/stratum-observability) and the [Rollbar](https://www.npmjs.com/package/rollbar) SDK; they are installed automatically.
+
+## 2. Get Rollbar tokens
+
+In your [Rollbar project](https://rollbar.com), open **Settings → Project Access Tokens**. You need:
+
+- **Post client item** — for browser/client-side events. Safe to expose in the client (e.g. `NEXT_PUBLIC_*`).
+- **Post server item** — for Node.js (Next.js server, API routes). Keep this server-only; do not put it in a `NEXT_PUBLIC_` env var.
+
+For a single-runtime app (only browser or only Node), one token is enough.
+
+## 3. Add tokens to your app
+
+**Next.js (browser + server):**
+
+In `.env` or `.env.local`:
+
+```bash
+NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN=<your-post-client-item-token>
+ROLLBAR_SERVER_TOKEN=<your-post-server-item-token>
+```
+
+**Other apps:** set `ROLLBAR_CLIENT_TOKEN` and/or `ROLLBAR_SERVER_TOKEN` (or a single `ROLLBAR_ACCESS_TOKEN`) in your environment.
+
+Next: [Quick start](/guides/quickstart) to wire the plugin and publish events.

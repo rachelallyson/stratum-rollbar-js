@@ -1,0 +1,82 @@
+---
+title: Troubleshooting
+description: Fix common issues when events don't appear in Rollbar.
+---
+
+# Troubleshooting
+
+## Events not showing in Rollbar
+
+If you call `rollbarService.publish(...)` but items don't appear in your Rollbar project, check the following.
+
+### 1. Token scope and env vars
+
+- **Browser**: Use a **post client item** token and expose it via `NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN` (or `CLIENT_ACCESS_TOKEN` in the plugin). Do **not** put a post server item token in a `NEXT_PUBLIC_` variable.
+- **Server (Next.js API routes, server components)**: Use a **post server item** token in a server-only env var (e.g. `ROLLBAR_SERVER_TOKEN`) and pass it as `SERVER_ACCESS_TOKEN`.
+- Confirm the token is present at runtime: `console.log(!!process.env.NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN)` (client) or check server env in a safe way.
+
+See [Rollbar access tokens](https://docs.rollbar.com/docs/access-tokens) and [Next.js](https://docs.rollbar.com/docs/nextjs).
+
+### 2. reportLevel filtering
+
+Rollbar’s default `reportLevel` can filter out `info` and `debug` events. If you’re sending those levels and nothing shows up, set a lower threshold in your config:
+
+```tsx
+RollbarPluginFactory({
+  CLIENT_ACCESS_TOKEN: process.env.NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN!,
+  SERVER_ACCESS_TOKEN: process.env.ROLLBAR_SERVER_TOKEN!,
+  config: {
+    environment: process.env.NODE_ENV,
+    reportLevel: "debug", // allow info and debug
+  },
+  clientConfig: {
+    reportLevel: "debug",
+  },
+});
+```
+
+### 3. Placeholder or invalid token
+
+If the example app shows a warning like “Set ROLLBAR_CLIENT_TOKEN in .env”, the token is missing or still the placeholder. Create a `.env` from `.env.example` and set a real **post client item** token from your Rollbar project’s access tokens page.
+
+### 4. Plugin data shape
+
+Stratum passes plugin-specific payloads in `pluginData.RollbarPlugin.properties`. The plugin reads from there when building the Rollbar payload. Ensure you’re publishing with the correct shape:
+
+```tsx
+await rollbarService.publish("SOME_EVENT", {
+  pluginData: {
+    RollbarPlugin: {
+      properties: {
+        error: err,        // optional Error for error/critical
+        custom_key: "value",
+      },
+    },
+  },
+});
+```
+
+For **IDENTIFY**, include `id` (or `distinct_id` / `user_id`) and optionally `username`, `email` in `properties`.
+
+### 5. Network and CORS
+
+In the browser, open DevTools → Network and confirm a POST to `https://api.rollbar.com/api/1/item/` (or your configured endpoint) returns `200` with a body like `{ "err": 0, "result": { "uuid": "..." } }`. If the request fails or is blocked, check CORS and ad blockers.
+
+### 6. Debug mode
+
+Enable the plugin’s `DEBUG` option to log publish calls to the console and confirm events are being sent:
+
+```tsx
+RollbarPluginFactory({
+  // ...
+  DEBUG: true,
+});
+```
+
+## Example app: .env not loading
+
+The example uses Parcel; if `process.env.ROLLBAR_CLIENT_TOKEN` is undefined in the browser, the project uses a build-time script that reads `.env` and generates `src/example/env.generated.ts`. Ensure you run `npm run example` (which runs the generator) and that `.env` exists in the package root with `ROLLBAR_CLIENT_TOKEN=...`. Do not commit `.env` or `env.generated.ts` (the latter is in `.gitignore`).
+
+## Next.js: server vs client token
+
+Use two tokens so server and client items are attributed correctly. See [Next.js](/guides/nextjs) for env var setup and [Configuration](/guides/configuration) for `serverConfig` / `clientConfig` (e.g. disabling `captureUncaught` on the server).

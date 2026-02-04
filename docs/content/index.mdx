@@ -1,0 +1,71 @@
+---
+title: Stratum Rollbar Plugin
+description: A Rollbar plugin for Stratum Observability that works in both browser and Node.
+---
+
+# Stratum Rollbar Plugin
+
+A **Rollbar** plugin for [Stratum Observability](https://www.npmjs.com/package/@capitalone/stratum-observability) that works in **both browser and Node**. Send events from Next.js server components, API routes, and client components with one plugin. **Next.js and React are not required** — the plugin is framework-agnostic (Node, browser, Vite, Express, etc.); the docs emphasize Next.js for the common server+client token split.
+
+## Features
+
+- **Browser and server** — Same API on client and server; use separate Rollbar tokens per runtime (e.g. `post_client_item` vs `post_server_item`).
+- **Log levels** — `critical`, `error`, `warning`, `info`, `debug` map to Rollbar's methods.
+- **Person tracking** — `IDENTIFY` and `CLEAR_PERSON` event types call `Rollbar.configure({ payload: { person } })`.
+- **Error objects** — Pass an `Error` in event properties for error/critical so Rollbar gets stack traces.
+- **Next.js** — Environment-aware token selection and optional `serverConfig` / `clientConfig`.
+
+## Quick example
+
+```bash
+npm install @rachelallyson/stratum-rollbar-js
+```
+
+```tsx
+import {
+  RollbarService,
+  RollbarPluginFactory,
+  RollbarEventTypes,
+} from "@rachelallyson/stratum-rollbar-js";
+
+const catalog = {
+  API_ERROR: {
+    id: "API_ERROR",
+    description: "API request failed",
+    eventType: RollbarEventTypes.ERROR,
+    properties: { error: "object", path: "string", status: "number" },
+  },
+};
+
+export const rollbarService = new RollbarService({
+  catalog: { items: catalog },
+  plugins: [
+    RollbarPluginFactory({
+      CLIENT_ACCESS_TOKEN: process.env.NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN!,
+      SERVER_ACCESS_TOKEN: process.env.ROLLBAR_SERVER_TOKEN!,
+      config: { environment: process.env.NODE_ENV },
+    }),
+  ],
+  productName: "my-app",
+  productVersion: "1.0.0",
+});
+
+// Then: rollbarService.publish("API_ERROR", { pluginData: { RollbarPlugin: { properties: { ... } } } });
+```
+
+## Documentation
+
+- **[Installation](/installation)** — Add the package and tokens.
+- **[Quick start](/guides/quickstart)** — Wire the plugin and publish your first event.
+- **[Next.js](/guides/nextjs)** — Server and client tokens, config, and Rollbar's provider.
+- **[Configuration](/guides/configuration)** — All plugin options.
+- **[Event types](/guides/event-types)** — Log levels, identify, clear person.
+- **[Errors with stack](/guides/errors-with-stack)** — Sending `Error` instances.
+- **[Example app](/guides/example-app)** — Run the demo and try the UI.
+- **[Testing](/guides/testing)** — Unit and E2E tests, including verifying Rollbar receives data.
+- **[Troubleshooting](/guides/troubleshooting)** — Events not showing, token scope, reportLevel, example app.
+- **[Reference](/reference/options)** — Options table and single-runtime usage.
+
+## License
+
+Apache-2.0
