@@ -7,6 +7,9 @@
     "type": "git",
     "url": "git+https://github.com/rachelallyson/stratum-rollbar-js.git"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "example": "node scripts/generate-example-env.cjs && node_modules/.bin/parcel src/example/index.html",
     "example:e2e": "node scripts/generate-example-env.cjs && node_modules/.bin/parcel src/example/index.html --port 3967",

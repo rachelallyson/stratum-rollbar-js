@@ -89,7 +89,7 @@ export const rollbarService = new RollbarService({
 });
 ```
 
-For uncaught errors and the Rollbar React Provider/Error Boundary in Next.js (App or Pages router), follow [Rollbar’s Next.js guide](https://docs.rollbar.com/docs/nextjs). This plugin handles **Stratum-driven** events (e.g. `rollbarService.publish(...)`) on both server and client and works alongside that setup.
+For uncaught errors and the Rollbar React Provider/Error Boundary in Next.js (App or Pages router), follow [Rollbar’s Next.js guide](https://docs.rollbar.com/docs/nextjs). This plugin handles **Stratum-driven** events (e.g. `rollbarService.publish(...)`) on both server and client and works alongside that setup. For App Router, see Rollbar's guide for Provider in root layout, `error.js`, and `global-error.js`; install `@rollbar/react` for the Provider and ErrorBoundary.
 
 Then use the same service on server and client:
 

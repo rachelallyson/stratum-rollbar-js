@@ -124,4 +124,18 @@ export function SomeClientComponent() {
 
 ## Rollbar provider and uncaught errors
 
-For uncaught errors and the Rollbar React Provider / Error Boundary, follow [Rollbar's Next.js guide](https://docs.rollbar.com/docs/nextjs). This plugin handles **Stratum-driven** events (`rollbarService.publish(...)`) on both server and client and works alongside that setup.
+This plugin handles **Stratum-driven** events (`rollbarService.publish(...)`) on both server and client. For **uncaught errors** and the **Rollbar React context** (e.g. `useRollbar()` in client components), set up Rollbar separately using their packages and docs; the two setups work alongside each other.
+
+**App Router:** Follow [Rollbar's Next.js (App Router) guide](https://docs.rollbar.com/docs/nextjs):
+
+1. **Provider** — In your root layout, wrap the app with `<Provider config={clientConfig}>` from `@rollbar/react` so hooks like `useRollbar()` are available in client components.
+2. **Route error handler** — Add `error.js` (and optionally `global-error.js` for root layout/template errors) and call `rollbar.error(error)` (or create a Rollbar instance in `global-error.js` since the Provider isn't available there).
+3. **ErrorBoundary** — Optionally use `<ErrorBoundary>` from `@rollbar/react` instead of or in addition to Next.js error handlers.
+
+Install Rollbar's React integration if you use the Provider or ErrorBoundary:
+
+```bash
+npm install rollbar @rollbar/react
+```
+
+Then configure a `clientConfig` (e.g. same token as `NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN`) for the Provider. This plugin does not ship or replace that setup; it only sends events you publish through Stratum.
